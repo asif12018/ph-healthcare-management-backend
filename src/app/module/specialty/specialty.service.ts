@@ -1,7 +1,8 @@
-import { prisma } from "../../app/lib/prisma";
-import { Specialty } from "../../generated/prisma/client";
 
 //create specialty
+
+import { Specialty } from "../../../generated/prisma/client";
+import { prisma } from "../../lib/prisma";
 
 
 

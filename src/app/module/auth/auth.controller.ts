@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
-import { catchAsync } from "../../app/shared/catchAsync";
+
 import { authService } from "./auth.service";
-import { sendResponse } from "../../app/shared/sendResponse";
+
 import status from "http-status";
+import { catchAsync } from "../../shared/catchAsync";
+import { sendResponse } from "../../shared/sendResponse";
 
 
 

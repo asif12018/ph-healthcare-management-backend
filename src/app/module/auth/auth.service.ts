@@ -1,6 +1,7 @@
-import { auth } from "../../app/lib/auth";
-import { prisma } from "../../app/lib/prisma";
-import { Role, User, UserStatus } from "../../generated/prisma/client";
+import { UserStatus } from "../../../generated/prisma/enums";
+import { auth } from "../../lib/auth";
+import { prisma } from "../../lib/prisma";
+
 
 interface IRegisterPatient {
     name: string;
