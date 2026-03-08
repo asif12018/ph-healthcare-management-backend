@@ -1,4 +1,4 @@
- enum Role {
+enum Role {
   SUPER_ADMIN
   ADMIN
   DOCTOR

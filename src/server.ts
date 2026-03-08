@@ -1,4 +1,5 @@
-import app, { port } from "./app"
+import app from "./app"
+import { envVars } from "./config/env";
 
 
 
@@ -6,8 +7,8 @@ import app, { port } from "./app"
 
 const bootstrap = ()=>{
     try{
-         app.listen(process.env.PORT,()=>{
-    console.log(`server is running on http://localhost:${port}`)
+         app.listen(envVars.PORT,()=>{
+    console.log(`server is running on http://localhost:${envVars.PORT}`)
 });
 
     }catch(error){
