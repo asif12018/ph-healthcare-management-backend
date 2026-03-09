@@ -39,6 +39,7 @@ const createDoctorZodSchema = z.object({
       .string("Qualification is required")
       .min(2, "Qualification must be at least 2 characters")
       .max(50, "Qualification must be at most 50 characters"),
+    currentWorkingPlace:z.string("Working place is required"),
     designation: z
       .string("Current working place is required")
       .min(2, "current working place must be at least 2 character long")
@@ -56,12 +57,12 @@ router.post(
   (req: Request, res: Response, next: NextFunction) => {
     const parseResult = createDoctorZodSchema.safeParse(req.body);
     if (!parseResult.success) {
-      next(parseResult.error);
+      return next(parseResult.error);
     }
 
     //sanitizing the data
     req.body = parseResult.data;
-    // next()
+    next()
   },
   UserController.createDoctor,
 );
