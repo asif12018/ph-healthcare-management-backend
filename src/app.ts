@@ -3,6 +3,7 @@ import { prisma } from "./app/lib/prisma";
 import { IndexRoute } from "./app/routes";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFount } from "./app/middleware/notFoundRoute";
+import cookieParser from "cookie-parser";
 
 
 const app:Application = express();
@@ -14,6 +15,8 @@ app.use(express.urlencoded({extended: true}));
 
 
 app.use(express.json());
+
+app.use(cookieParser());
 
 
 //specailty route
