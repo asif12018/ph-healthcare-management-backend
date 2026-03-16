@@ -2,6 +2,8 @@ import { Router } from "express";
 import { UserController } from "./user.controller";
 import { validateRequest } from "../../middleware/validateRequest";
 import { createDoctorZodSchema } from "./user.validation";
+import { Role } from "../../../generated/prisma/enums";
+import { checkAuth } from "../../middleware/checkAuth";
 
 
 
@@ -25,5 +27,11 @@ router.post(
   validateRequest(createDoctorZodSchema),
   UserController.createDoctor,
 );
+
+//create admin route
+
+router.post("/create-admin",
+    checkAuth(Role.SUPER_ADMIN, Role.ADMIN),
+    UserController.createAdmin);
 
 export const UserRoutes = router;
