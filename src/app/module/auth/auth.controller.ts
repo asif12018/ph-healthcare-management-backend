@@ -8,6 +8,7 @@ import { sendResponse } from "../../shared/sendResponse";
 import { tokenUtils } from "../../utils/token";
 import { envVars } from "../../../config/env";
 import ms, { type StringValue } from "ms";
+import AppError from "../../../errorHelpers/AppError";
 
 
 //registered a paitent
@@ -72,9 +73,38 @@ const getMe = catchAsync(async(req:Request, res:Response)=>{
     })
 })
 
+//get new Token 
+const getNewToken = catchAsync(async(req:Request, res:Response)=>{
+   const refreshToken = req.cookies.refreshToken;
+   const betterAuthSessionToken = req.cookies.sessionToken;
+   if(!betterAuthSessionToken){
+    throw new AppError(status.UNAUTHORIZED, "Session token not found")
+   }
+   if(!refreshToken){
+    throw new AppError(status.UNAUTHORIZED, "Refresh token not found")
+   }
+   const result = await authService.getNewToken(refreshToken, betterAuthSessionToken);
+   const {accessToken, refreshToken: newRefreshToken, sessionToken} = result;
+   //set access token in cookies
+   tokenUtils.setAccessTokenCookie(res, accessToken);
+   tokenUtils.setRefreshTokenCookie(res, newRefreshToken);
+   tokenUtils.setBetterAuthSessionCookie(res, sessionToken);
+   sendResponse(res,{
+    httpStatusCode:status.OK,
+    success: true,
+    message:"Token refreshed successfully",
+    data: {
+        sessionToken,
+        accessToken,
+        newRefreshToken,
+    }
+   })
+})
+
 
 export const AuthController = {
     registerPaitent,
     loginUser,
-    getMe
+    getMe,
+    getNewToken
 }
