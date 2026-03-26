@@ -8,14 +8,11 @@ import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { jwtUtils } from "../../utils/jwt";
 import { envVars } from "../../../config/env";
 import { JwtPayload } from "jsonwebtoken";
-
-
-
-interface IRegisterPatient {
-    name: string;
-    email: string;
-    password: string;
-}
+import {
+  IChangePasswordPayload,
+  ILoginUserPayload,
+  IRegisterPatient,
+} from "./auth.interface";
 
 const registerPaitent = async (payload: IRegisterPatient) => {
   const { name, email, password } = payload;
@@ -24,92 +21,28 @@ const registerPaitent = async (payload: IRegisterPatient) => {
       name,
       email,
       password,
-    //   needPasswordChange: false,
-    //   role: Role.PATIENT,
-    }
+      //   needPasswordChange: false,
+      //   role: Role.PATIENT,
+    },
   });
 
-  if(!data.user){
+  if (!data.user) {
     // throw new Error("Failed to register a patient");
-    throw new AppError(status.BAD_REQUEST,"Failed to register a patient");
+    throw new AppError(status.BAD_REQUEST, "Failed to register a patient");
   }
-  try{
-   
-  const patient = await prisma.$transaction(async(tx)=>{
-        const patientTx =await tx.patient.create({
-          data:{
-            userId: data.user.id,
-            name: payload.name,
-            email:payload.email,
-          }
-        });
+  try {
+    const patient = await prisma.$transaction(async (tx) => {
+      const patientTx = await tx.patient.create({
+        data: {
+          userId: data.user.id,
+          name: payload.name,
+          email: payload.email,
+        },
+      });
 
-        return patientTx;
-  });
-
-  //generate access token
-    const accessToken = tokenUtils.getAccessToken({
-      userId: data?.user?.id,
-      role: data?.user?.role,
-      name: data?.user?.name,
-      email: data?.user?.email,
-      status: data?.user?.status,
-      isDeleted: data?.user?.isDeleted,
-      emailVerified: data?.user?.emailVerified
-    })
-
-    //generate refresh token
-    const refreshToken = tokenUtils.getRefreshToken({
-      userId: data?.user?.id,
-      role: data?.user?.role,
-      name: data?.user?.name,
-      email: data?.user?.email,
-      status: data?.user?.status,
-      isDeleted: data?.user?.isDeleted,
-      emailVerified: data?.user?.emailVerified
-    })
-
-
-  return {
-    ...data,
-    accessToken,
-    refreshToken,
-    patient
-  };
-  }catch(error:any){
-     console.error("Transaction error", error);
-     await prisma.user.delete({
-      where:{
-        id:data.user.id
-      }
-     });
-     throw error;
-  }
-};
-
-//login user
-
-interface ILoginUserPayload {
-   email: string;
-   password: string;
-}
-
-const loginUser = async(payload:ILoginUserPayload)=>{
-  const {email, password} = payload
-    const data = await auth.api.signInEmail({
-      body:{
-        email:email, 
-        password: password
-      }
+      return patientTx;
     });
 
-    if(data?.user.status === UserStatus.BLOCKED){
-          throw new AppError(status.FORBIDDEN,"User is blocked")
-    }
-
-    if(data?.user?.isDeleted || data?.user?.status === UserStatus.DELETED){
-      throw new AppError(status.NOT_FOUND,"User is deleted")
-    }
     //generate access token
     const accessToken = tokenUtils.getAccessToken({
       userId: data?.user?.id,
@@ -118,8 +51,8 @@ const loginUser = async(payload:ILoginUserPayload)=>{
       email: data?.user?.email,
       status: data?.user?.status,
       isDeleted: data?.user?.isDeleted,
-      emailVerified: data?.user?.emailVerified
-    })
+      emailVerified: data?.user?.emailVerified,
+    });
 
     //generate refresh token
     const refreshToken = tokenUtils.getRefreshToken({
@@ -129,124 +62,254 @@ const loginUser = async(payload:ILoginUserPayload)=>{
       email: data?.user?.email,
       status: data?.user?.status,
       isDeleted: data?.user?.isDeleted,
-      emailVerified: data?.user?.emailVerified
-    })
+      emailVerified: data?.user?.emailVerified,
+    });
 
     return {
       ...data,
       accessToken,
-      refreshToken
+      refreshToken,
+      patient,
     };
-}
+  } catch (error: any) {
+    console.error("Transaction error", error);
+    await prisma.user.delete({
+      where: {
+        id: data.user.id,
+      },
+    });
+    throw error;
+  }
+};
+
+//login user
+
+const loginUser = async (payload: ILoginUserPayload) => {
+  const { email, password } = payload;
+  const data = await auth.api.signInEmail({
+    body: {
+      email: email,
+      password: password,
+    },
+  });
+
+  if (data?.user.status === UserStatus.BLOCKED) {
+    throw new AppError(status.FORBIDDEN, "User is blocked");
+  }
+
+  if (data?.user?.isDeleted || data?.user?.status === UserStatus.DELETED) {
+    throw new AppError(status.NOT_FOUND, "User is deleted");
+  }
+  //generate access token
+  const accessToken = tokenUtils.getAccessToken({
+    userId: data?.user?.id,
+    role: data?.user?.role,
+    name: data?.user?.name,
+    email: data?.user?.email,
+    status: data?.user?.status,
+    isDeleted: data?.user?.isDeleted,
+    emailVerified: data?.user?.emailVerified,
+  });
+
+  //generate refresh token
+  const refreshToken = tokenUtils.getRefreshToken({
+    userId: data?.user?.id,
+    role: data?.user?.role,
+    name: data?.user?.name,
+    email: data?.user?.email,
+    status: data?.user?.status,
+    isDeleted: data?.user?.isDeleted,
+    emailVerified: data?.user?.emailVerified,
+  });
+
+  return {
+    ...data,
+    accessToken,
+    refreshToken,
+  };
+};
 
 //get user own profile
 
-const getMe = async(user:IRequestUser)=>{
-    //check if the user exist or not
-    const isUserExist = await prisma.user.findUnique({
-      where:{
-        id: user.userId
+const getMe = async (user: IRequestUser) => {
+  //check if the user exist or not
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+    include: {
+      patient: {
+        include: {
+          appointments: true,
+          reviews: true,
+          prescriptions: true,
+          medicalReports: true,
+          patientHealthData: true,
+        },
       },
-      include: {
-        patient: {
-          include:{
-            appointments: true,
-            reviews: true,
-            prescriptions: true,
-            medicalReports: true,
-            patientHealthData: true
-          }
+      doctor: {
+        include: {
+          specialties: true,
+          appointments: true,
+          reviews: true,
+          prescriptions: true,
         },
-        doctor: {
-          include:{
-            specialties: true,
-            appointments: true,
-            reviews: true,
-            prescriptions: true
-          }
-        },
-        admin: true
-      }
-    });
+      },
+      admin: true,
+    },
+  });
 
-    if(!isUserExist){
-      throw new AppError(status.NOT_FOUND,"User not found")
-    }
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
 
-    return isUserExist;
-}
+  return isUserExist;
+};
 
 //funtion to get new refresh token if the access token expired
 
-const getNewToken = async(refreshToken: string, sessionToken: string)=>{
+const getNewToken = async (refreshToken: string, sessionToken: string) => {
   const isSessionTokenExist = await prisma.session.findUnique({
-    where:{
-      token: sessionToken
+    where: {
+      token: sessionToken,
     },
     include: {
-      user: true
-    }
+      user: true,
+    },
   });
 
-  if(!isSessionTokenExist){
-    throw new AppError(status.UNAUTHORIZED, "Invalid session token")
+  if (!isSessionTokenExist) {
+    throw new AppError(status.UNAUTHORIZED, "Invalid session token");
   }
 
   //verify the refresh token
-  const verifiedRefreshToken = jwtUtils.verifyToken(refreshToken, envVars.REFRESH_TOKEN_SECRET);
-  if(!verifiedRefreshToken.success && verifiedRefreshToken.err){
-    throw new AppError(status.UNAUTHORIZED, "Invalid refresh token")
+  const verifiedRefreshToken = jwtUtils.verifyToken(
+    refreshToken,
+    envVars.REFRESH_TOKEN_SECRET,
+  );
+  if (!verifiedRefreshToken.success && verifiedRefreshToken.err) {
+    throw new AppError(status.UNAUTHORIZED, "Invalid refresh token");
   }
 
   const data = verifiedRefreshToken.data as JwtPayload;
 
-     const newAccessToken = tokenUtils.getAccessToken({
-      userId: data?.userId,
-      role: data?.role,
-      name: data?.name,
-      email: data?.email,
-      status: data?.status,
-      isDeleted: data?.isDeleted,
-      emailVerified: data?.emailVerified
-     })
+  const newAccessToken = tokenUtils.getAccessToken({
+    userId: data?.userId,
+    role: data?.role,
+    name: data?.name,
+    email: data?.email,
+    status: data?.status,
+    isDeleted: data?.isDeleted,
+    emailVerified: data?.emailVerified,
+  });
 
-     const newRefreshToken = tokenUtils.getRefreshToken({
-      userId: data?.userId,
-      role: data?.role,
-      name: data?.name,
-      email: data?.email,
-      status: data?.status,
-      isDeleted: data?.isDeleted,
-      emailVerified: data?.emailVerified
-     })
+  const newRefreshToken = tokenUtils.getRefreshToken({
+    userId: data?.userId,
+    role: data?.role,
+    name: data?.name,
+    email: data?.email,
+    status: data?.status,
+    isDeleted: data?.isDeleted,
+    emailVerified: data?.emailVerified,
+  });
 
-     //update the session token
-     
-     const {token} = await prisma.session.update({
-      where:{
-        token: sessionToken
-      },
-      data:{
-        token: newRefreshToken,
-        expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000),
-        updatedAt: new Date()
-      }
-     })
+  //update the session token
 
-     return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-      sessionToken: token
-     }
+  const { token } = await prisma.session.update({
+    where: {
+      token: sessionToken,
+    },
+    data: {
+      token: newRefreshToken,
+      expiresAt: new Date(Date.now() + 60 * 60 * 24 * 1000),
+      updatedAt: new Date(),
+    },
+  });
 
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+    sessionToken: token,
+  };
+};
+
+// change user password
+
+const changePassword = async (
+  payload: IChangePasswordPayload,
+  sessionToken: string,
+) => {
+  const session = await auth.api.getSession({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  // console.log("this is session", session);
+
+  if (!session) {
+    throw new AppError(status.UNAUTHORIZED, "Invalid session token");
+  }
+
+  // console.log("this is payload", payload);
+  const { currentPassword, newPassword } = payload;
+  const result = await auth.api.changePassword({
+    body: {
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    },
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  //generate access token
+  const accessToken = tokenUtils.getAccessToken({
+    userId: session?.user?.id,
+    role: session?.user?.role,
+    name: session?.user?.name,
+    email: session?.user?.email,
+    status: session?.user?.status,
+    isDeleted: session?.user?.isDeleted,
+    emailVerified: session?.user?.emailVerified,
+  });
+
+  //generate refresh token
+  const refreshToken = tokenUtils.getRefreshToken({
+    userId: session?.user?.id,
+    role: session?.user?.role,
+    name: session?.user?.name,
+    email: session?.user?.email,
+    status: session?.user?.status,
+    isDeleted: session?.user?.isDeleted,
+    emailVerified: session?.user?.emailVerified,
+  });
+
+  return {
+    ...result,
+    accessToken,
+    refreshToken,
+  }
+};
+
+//logout user
+
+const logOutUser = async(sessionToken: string)=>{
+   const result = await auth.api.signOut({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+   })
+
+   return result;
 }
-
-
-
 
 export const authService = {
-    registerPaitent,
-    loginUser,
-    getMe,
-    getNewToken
-}
+  registerPaitent,
+  loginUser,
+  getMe,
+  getNewToken,
+  changePassword,
+  logOutUser
+};
