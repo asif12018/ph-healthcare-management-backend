@@ -4,7 +4,8 @@ import { prisma } from "./prisma";
 import { Role, UserStatus } from "../../generated/prisma/enums";
 import { envVars } from "../../config/env";
 import ms, { type StringValue } from "ms";
-import { bearer } from "better-auth/plugins";
+import { bearer, emailOTP } from "better-auth/plugins";
+import { sendEmail } from "../utils/email";
 // If your Prisma file is located elsewhere, you can change the path
 
 export const auth = betterAuth({
@@ -13,6 +14,13 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
+  },
+  //email verificaiton
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
   },
   //addictional fields for user
   user: {
@@ -44,8 +52,56 @@ export const auth = betterAuth({
       },
     },
   },
-  plugins:[
-    bearer()
+  plugins: [
+    bearer(),
+    //plugins to send email for email verificaiton
+    emailOTP({
+      overrideDefaultEmailVerification: true,
+      async sendVerificationOTP({ email, otp, type }) {
+        //checking the type of email verification
+        if (type === "email-verification") {
+          const user = await prisma.user.findFirst({
+            where: {
+              email,
+            },
+          });
+          //checking if the user exist and not verified
+          if (user && !user.emailVerified) {
+            sendEmail({
+              to: email,
+              subject: "Verify Your email",
+              templateName: "otp",
+              templateData: {
+                name: user.name,
+                otp,
+              },
+            });
+          }
+        }else if(type ="forget-password"){
+               const user = await prisma.user.findFirst({
+                where:{
+                  email
+                }
+               });
+               if(user){
+                sendEmail({
+                  to:email,
+                  subject: "Password Reset OTP",
+                  templateName: "otp",
+                  templateData:{
+                    name: user.name,
+                    otp
+                  }
+                })
+               }
+          }
+      },
+      expiresIn: 2 * 60, // valid for 2mins
+      otpLength: 6, // otp will be 6 digits long
+      
+
+    }),
+    
   ],
   session: {
     expiresIn: 60 * 60 * 60 * 24, // 1day in seconds

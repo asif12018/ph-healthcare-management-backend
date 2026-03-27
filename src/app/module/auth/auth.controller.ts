@@ -150,6 +150,39 @@ const logOutUser = catchAsync(async(req:Request, res:Response)=>{
     })
 })
 
+//verify email
+const verifyEmail = catchAsync(async(req:Request, res:Response)=>{
+    const {email, otp} = req.body;
+   await authService.verifyEmail(email, otp);
+    sendResponse(res,{
+        httpStatusCode:status.OK,
+        success: true,
+        message:"Email verified successfully",
+    })
+})
+
+//forget password
+const forgetPassword = catchAsync(async(req:Request, res:Response)=>{
+    const {email} = req.body;
+    await authService.forgetPassword(email);
+    sendResponse(res,{
+        httpStatusCode:status.OK,
+        success: true,
+        message:"Password reset email sent successfully",
+    })
+})
+
+//reset password
+const resetPassword = catchAsync(async(req:Request, res:Response)=>{
+    const {email, otp, newPassword} = req.body;
+    await authService.resetPassword(email, otp, newPassword);
+    sendResponse(res,{
+        httpStatusCode:status.OK,
+        success: true,
+        message:"Password reset successfully",
+    })
+})
+
 
 export const AuthController = {
     registerPaitent,
@@ -157,5 +190,8 @@ export const AuthController = {
     getMe,
     getNewToken,
     changePassword,
-    logOutUser
+    logOutUser,
+    verifyEmail,
+    forgetPassword,
+    resetPassword
 }

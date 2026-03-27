@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Verification - PH Health Management</title>
+    <style>
+        /* Email Reset */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        body { margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0f172a; }
+        
+        /* Outer Canvas (Dark Mode Vibe) */
+        .email-canvas {
+            width: 100%;
+            background-color: #0f172a; /* Deep Slate */
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 80%);
+            padding: 60px 20px;
+            box-sizing: border-box;
+        }
+
+        /* The Main Floating Card */
+        .premium-card {
+            max-width: 540px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Brand Header */
+        .card-header {
+            padding: 40px 40px 20px 40px;
+            display: flex;
+            align-items: center;
+        }
+        .brand-name {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+        .badge {
+            display: inline-block;
+            background-color: #e0f2fe;
+            color: #0284c7;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-top: 15px;
+        }
+
+        /* Content Area */
+        .card-body {
+            padding: 0 40px 30px 40px;
+        }
+        .greeting-text {
+            font-size: 18px;
+            color: #334155;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .highlight-name {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        /* The Dark OTP Compartment */
+        .otp-display-unit {
+            background-color: #0f172a;
+            border-radius: 16px;
+            padding: 35px 20px;
+            text-align: center;
+            border: 1px solid #1e293b;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+        .otp-eyebrow {
+            color: #94a3b8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .otp-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 52px;
+            font-weight: 700;
+            color: #38bdf8; /* Bright Cyan/Blue */
+            letter-spacing: 18px;
+            margin: 0;
+            margin-right: -18px; /* Fix offset from letter-spacing */
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.3); /* Subtle glow effect */
+        }
+
+        /* Meta Data Table */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .meta-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .meta-table td:last-child {
+            border-bottom: none;
+        }
+        .meta-label {
+            color: #64748b;
+            font-weight: 500;
+            width: 40%;
+        }
+        .meta-value {
+            color: #0f172a;
+            font-weight: 600;
+            text-align: right;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        /* Inner Footer / Security */
+        .security-banner {
+            background-color: #fff1f2;
+            border-left: 4px solid #e11d48;
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #9f1239;
+            line-height: 1.5;
+        }
+
+        /* Outer Footer (Outside the card) */
+        .email-footer {
+            max-width: 540px;
+            margin: 30px auto 0;
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .email-footer a {
+            color: #94a3b8;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-canvas">
+        
+        <div class="premium-card">
+            
+            <div class="card-header">
+                <div>
+                    <h1 class="brand-name">PH Health</h1>
+                    <div class="badge">Authorization Required</div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="greeting-text">
+                    Hello <span class="highlight-name"><%= name %></span>,<br><br>
+                    A request has been made to securely access your PH Health Management dashboard. Enter the code below to verify your identity.
+                </div>
+
+                <div class="otp-display-unit">
+                    <span class="otp-eyebrow">Secure Access Code</span>
+                    <div class="otp-code"><%= otp %></div>
+                </div>
+
+                <table class="meta-table">
+                    <tr>
+                        <td class="meta-label">Validity Period</td>
+                        <td class="meta-value">2 Minutes</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-label">Connection</td>
+                        <td class="meta-value"><span class="status-dot"></span> Secure (TLS)</td>
+                    </tr>
+                </table>
+
+                <div class="security-banner">
+                    <strong>Do not share this code.</strong> Our medical and support staff will never ask you for this password over the phone or via email.
+                </div>
+            </div>
+            
+        </div>
+
+        <div class="email-footer">
+            <p>&copy; <%= new Date().getFullYear() %> PH Health Management Systems. All rights reserved.</p>
+            <p>If you did not initiate this request, your account is safe, but you may want to <a href="#">review your security settings</a>.</p>
+        </div>
+
+    </div>
+</body>
+</html>

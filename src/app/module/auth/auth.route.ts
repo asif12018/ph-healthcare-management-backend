@@ -11,5 +11,8 @@ router.get("/me", checkAuth(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.SUPER_AD
 router.post("/refresh-token", AuthController.getNewToken);
 router.post("/change-password", checkAuth(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.SUPER_ADMIN), AuthController.changePassword);
 router.post("/logout", checkAuth(Role.ADMIN, Role.PATIENT, Role.DOCTOR, Role.SUPER_ADMIN), AuthController.logOutUser);
+router.post("/verify-email",AuthController.verifyEmail);
+router.post("/forget-password",AuthController.forgetPassword);
+router.post("/reset-password",AuthController.resetPassword);
 
 export const AuthRoutes = router;
