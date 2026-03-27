@@ -6,9 +6,12 @@ import { envVars } from "../../config/env";
 import ms, { type StringValue } from "ms";
 import { bearer, emailOTP } from "better-auth/plugins";
 import { sendEmail } from "../utils/email";
+import { env } from "node:process";
 // If your Prisma file is located elsewhere, you can change the path
 
 export const auth = betterAuth({
+  baseURL: envVars.BETTER_AUTH_URL,
+  secret: envVars.BETTER_AUTH_SECRET,
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
@@ -16,6 +19,25 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
   },
+  //social provider || login with social media
+  socialProviders:{
+    google:{
+      clientId: envVars.GOOGLE_CLIENT_ID,
+      clientSecret: envVars.GOOGLE_CLIENT_SECRET,
+      // callbackURL: envVars.GOOGLE_CALLBACK_URL,
+      mapProfileToUser: () =>{
+        return {
+          role: Role.PATIENT,
+          status: UserStatus.ACTIVE,
+          needPasswordChange: false,
+          emailVerified: true,
+          isDeleted: false,
+          deletedAt: null
+        }
+      }
+    }
+  },
+  
   //email verificaiton
   emailVerification: {
     sendOnSignUp: true,
@@ -111,8 +133,30 @@ export const auth = betterAuth({
       maxAge: 60 * 60 * 60 * 24, // 1day in seconds
     },
   },
-  // trustedOrigins:[process.env.BETTER_AUTH_URL || "http://localhost:5000"],
-  // advanced:{
-  //     disableCSRFCheck: true
-  // }
+  redirectURLs:{
+    signIn: `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success`
+  },
+  trustedOrigins:[process.env.BETTER_AUTH_URL || "http://localhost:5000", envVars.FRONTEND_URL],
+  advanced:{
+      // disableCSRFCheck: true
+      useSecureCookies: false,
+      cookies:{
+        state:{
+          attributes:{
+            sameSite: "none",
+            secure: true,
+            httpOnly: true,
+            path:"/"
+          }
+        }
+      },
+      sessionToken:{
+        attributes:{
+          sameSite: "none",
+          secure: true,
+          httpOnly: true,
+          path:"/"
+        }
+      }
+  }
 });

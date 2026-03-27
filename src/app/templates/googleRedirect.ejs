@@ -1,0 +1,288 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google Login</title>
+  </head>
+  <body>
+    <div>
+      <p>Redirecting to google.....</p>
+    </div>
+  </body>
+  <script>
+   (
+     async () => {
+      try {
+        const response = await fetch(
+          `<%= betterAuthUrl %>/api/auth/sign-in/social`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              provider: "google",
+              callbackUrl: `<%= callbackURL %>`,
+            }),
+          },
+        );
+
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          document.body.innerHTML = `
+                <div>
+                    <p>Error occurred while Redirecting to google.Please try again later.</p>
+                </div>
+                `;
+        }
+      } catch (err) {
+        document.body.innerHTML = `
+                <div>
+                    <p>Error occurred while Redirecting to google.Please try again later.
+                    Error: ${err.message}</p>
+                </div>
+                `;
+      }
+    }
+   )();
+  </script>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connecting to Hospital Network...</title>
+    <style>
+      /* --- Variables & Core Styles --- */
+      :root {
+        --primary-blue: #0070e0; /* Med-tech blue */
+        --error-red: #ef4444;
+        --bg-color: #f0f7ff; /* Clean, light-blue background */
+        --card-bg: #ffffff;
+        --text-dark: #1e293b;
+        --text-light: #64748b;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: var(--text-dark);
+        overflow: hidden; /* For smooth entrance */
+      }
+
+      /* --- Main Card --- */
+      .hospital-card {
+        background: var(--card-bg);
+        padding: 50px 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 25px -5px rgba(0, 112, 224, 0.08), 0 10px 10px -5px rgba(0, 112, 224, 0.04);
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        position: relative;
+        /* Smooth Entrance Animation */
+        animation: cardEntrance 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+        transform: scale(0.9) translateY(30px);
+      }
+
+      /* --- Typography --- */
+      .status-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.5px;
+      }
+
+      .status-subtitle {
+        font-size: 1rem;
+        color: var(--text-light);
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      /* =========================================
+         THE "COOL" HOSPITAL ANIMATION (ECG)
+         ========================================= */
+      .ecg-container {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 30px;
+        position: relative;
+      }
+
+      /* SVG ECG Heartbeat Path */
+      .ecg-path {
+        fill: none;
+        stroke-width: 3;
+        stroke: var(--primary-blue);
+        /* Creates the "drawing" effect */
+        stroke-dasharray: 150;
+        stroke-dashoffset: 150;
+        animation: ecgDash 2s linear infinite;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* Blinking LED dot that follows the tip */
+      .ecg-dot {
+        fill: var(--primary-blue);
+        opacity: 0;
+        animation: dotFollow 2s linear infinite;
+        filter: drop-shadow(0 0 4px var(--primary-blue));
+      }
+
+      /* --- Error State (Integrated seamlessly) --- */
+      .error-icon-svg {
+        display: none; /* Hidden by default */
+        width: 70px;
+        height: 70px;
+        margin: 0 auto 30px auto;
+        color: var(--error-red);
+      }
+
+      /* When JS detects error, this class is added to .hospital-card */
+      .is-error .ecg-container {
+        display: none;
+      }
+      .is-error .error-icon-svg {
+        display: block;
+      }
+      .is-error .status-title {
+        color: var(--error-red);
+      }
+      .is-error {
+        box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.1), 0 10px 10px -5px rgba(239, 68, 68, 0.05);
+      }
+
+      /* =========================================
+         KEYFRAME ANIMATIONS
+         ========================================= */
+      
+      /* Card Entrance */
+      @keyframes cardEntrance {
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      /* ECG Trace Animation */
+      @keyframes ecgDash {
+        0% {
+          stroke-dashoffset: 150;
+        }
+        40% {
+          stroke-dashoffset: 0;
+        }
+        50% {
+          stroke-dashoffset: 0;
+          opacity: 1;
+        }
+        /* Create a pause after the pulse */
+        60%, 100% {
+          stroke-dashoffset: -150;
+          opacity: 0;
+        }
+      }
+
+      /* Leading Dot following path */
+      @keyframes dotFollow {
+        0% { transform: translate(-30px, -2px); opacity: 0; }
+        5% { opacity: 1; }
+        /* Syncing coordinate approximations with the SVG path peaks */
+        10% { transform: translate(-18px, -2px); }
+        13% { transform: translate(-14px, -20px); } /* Q wave */
+        16% { transform: translate(-10px, 30px); }  /* R wave */
+        19% { transform: translate(-6px, -10px); }  /* S wave */
+        25% { transform: translate(0px, -2px); }
+        40% { transform: translate(30px, -2px); opacity: 1;}
+        41%, 100% { opacity: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hospital-card" id="redirect-card">
+      
+      <div class="ecg-container">
+        <svg viewBox="0 -30 100 60" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,0 L35,0 L38,-15 L42,30 L46,-8 L50,0 L100,0" stroke="#e2e8f0" stroke-width="2" fill="none"/>
+          <path class="ecg-path" d="M0,0 L35,0 L38,-15 L42,30 L46,-8 L50,0 L100,0" />
+          <circle class="ecg-dot" cx="50" cy="0" r="3" />
+        </svg>
+      </div>
+
+      <svg class="error-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+
+      <h1 class="status-title" id="main-status-text">Network Authentication</h1>
+      <p class="status-subtitle" id="sub-status-text">Connecting securely to your Hospital Account via Google. Please wait...</p>
+    </div>
+
+    <script>
+      const card = document.getElementById('redirect-card');
+      const mainText = document.getElementById('main-status-text');
+      const subText = document.getElementById('sub-status-text');
+
+      // Helper function to handle errors gracefully
+      function handleError(errorMessage) {
+        // Add the error class to the card (triggers CSS change)
+        card.classList.add('is-error');
+        mainText.textContent = "Authentication Failed";
+        subText.textContent = errorMessage;
+      }
+
+      (async () => {
+        try {
+          const response = await fetch(
+            `<%= betterAuthUrl %>/api/auth/sign-in/social`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              credentials: "include",
+              body: JSON.stringify({
+                provider: "google",
+                callbackURL: `<%= callbackURL %>`,
+              }),
+            }
+          );
+
+          // Attempt to parse response as JSON
+          let data;
+          try {
+             data = await response.json();
+          } catch(e) {
+             throw new Error("Invalid response from server.");
+          }
+          
+          if (response.ok && data.url) {
+            // Success! Update text just before jump
+            mainText.textContent = "Securely Redirecting";
+            window.location.href = data.url;
+          } else {
+            // Server returned an error, use generic user-friendly message
+            handleError("Unable to verify credentials. Please contact administration.");
+          }
+        } catch (err) {
+          // Network or parsing error
+          handleError(`Connection issue: ${err.message}`);
+        }
+      })();
+    </script>
+  </body>
+</html>
