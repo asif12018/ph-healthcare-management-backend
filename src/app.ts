@@ -15,6 +15,7 @@ const app:Application = express();
 export const port = 5000;
 
 
+//middleware to redirect page for google signin or signup
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), `src/app/templates`));
 
@@ -35,6 +36,8 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 app.use(cookieParser());
+
+app.use(express.urlencoded({extended:true}));
 
 
 //specailty route
