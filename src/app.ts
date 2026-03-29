@@ -9,10 +9,14 @@ import { auth } from "./app/lib/auth";
 import path from "path";
 import cors from "cors";
 import { envVars } from "./config/env";
-
+import qs from "qs";
 
 const app:Application = express();
 export const port = 5000;
+
+
+//package to parse query string
+app.use("query parser", (str : string)=> qs.parse(str));
 
 
 //middleware to redirect page for google signin or signup
