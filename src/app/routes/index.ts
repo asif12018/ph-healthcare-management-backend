@@ -4,6 +4,8 @@ import { AuthRoutes } from "../module/auth/auth.route";
 import { UserRoutes } from "../module/user/user.route";
 import { DoctorRoutes } from "../module/doctor/doctor.route";
 import { AdminRoutes } from "../module/admin/admin.route";
+import { scheduleRoutes } from "../module/schedule/schedule.routes";
+import { DoctorScheduleRoutes } from "../module/doctorSchedule/doctorSchedule.routes";
 
 
 
@@ -20,7 +22,13 @@ router.use("/users", UserRoutes);
 
 router.use("/doctors", DoctorRoutes);
 
-router.use("/admins", AdminRoutes)
+router.use("/admins", AdminRoutes);
+
+router.use("/schedules", scheduleRoutes);
+
+router.use("/doctor-schedules", DoctorScheduleRoutes);
+
+// router.use("/appointments", AppointmentRoutes);
 
 
 export const IndexRoute = router;

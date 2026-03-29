@@ -87,8 +87,22 @@ export const auth = betterAuth({
               email,
             },
           });
+
+          if(!user){
+            console.error("User not found for email: ", email);
+            return;
+          }
+          if(user && user.role === Role.SUPER_ADMIN){
+               console.log(`User with this email ${email} is super admin, so not sending email`);
+               return;
+          }
+          //checking is it the first super admin on server
+          // const isItFirstSuperAdmin = await prisma.admin.count() === 1;
           //checking if the user exist and not verified
-          if (user && !user.emailVerified) {
+          if (user && !user.emailVerified
+            //  || isItFirstSuperAdmin
+          // || user?.role !== Role.SUPER_ADMIN
+            ) {
             sendEmail({
               to: email,
               subject: "Verify Your email",
