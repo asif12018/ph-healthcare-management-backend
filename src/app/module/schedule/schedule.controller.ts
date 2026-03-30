@@ -8,6 +8,7 @@ import { ScheduleService } from "./schedule.service";
 
 const createSchedule = catchAsync( async (req : Request, res : Response) => {
    const payload = req.body;
+//    console.log("this is payload", req.body);
    const schedule = await ScheduleService.createSchedule(payload);
     sendResponse(res, {
         success: true,

@@ -27,7 +27,7 @@ app.set("views", path.resolve(process.cwd(), `src/app/templates`));
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-  PaymentController.handleStripeWebHookEvent,
+  PaymentController.handleStripeWebhookEvent,
 );
 app.use(
   cors({

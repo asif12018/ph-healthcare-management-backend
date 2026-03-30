@@ -12,7 +12,8 @@ import { IQueryParams } from "../../interfaces/query.interface";
 const createMyDoctorSchedule = catchAsync(async(req:Request, res:Response)=>{
     const payload = req.body;
     const user = req.user;
-    const result = await DoctorScheduleService.createMyDoctorScheule(user, payload);
+    const result = await DoctorScheduleService.createMyDoctorSchedule(user, payload);
+    console.log('this is my result', result)
     sendResponse(res, {
         success: true,
         httpStatusCode: status.CREATED,

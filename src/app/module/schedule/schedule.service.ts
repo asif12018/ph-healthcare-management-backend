@@ -59,7 +59,7 @@ const createSchedule = async (payload: ICreateSchedulePayload) =>{
                 const result = await prisma.schedule.create({
                     data: scheduleData
                 })
-                console.log(result);
+                // console.log(result);
                 schedules.push(result);
             }
 

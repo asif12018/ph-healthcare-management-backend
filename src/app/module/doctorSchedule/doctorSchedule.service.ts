@@ -1,37 +1,43 @@
 import { DoctorSchedules, Prisma } from "../../../generated/prisma/client";
 import { IQueryParams } from "../../interfaces/query.interface";
-import { IRequestUser } from "../../interfaces/requestUser.interface"
-import { prisma } from "../../lib/prisma"
+import { IRequestUser } from "../../interfaces/requestUser.interface";
+import { prisma } from "../../lib/prisma";
 import { QueryBuilder } from "../../utils/QueryBuilder";
-import { IUpdateDoctorPayload } from "../doctor/doctor.interface";
-import { ICreateDoctorSchedulePayload, IUpdateDoctorSchedulePayload } from "./doctorSchedule.interface"
+
+import { ICreateDoctorSchedulePayload, IUpdateDoctorSchedulePayload } from "./doctorSchedule.interface";
 import { doctorScheduleFilterableFields, doctorScheduleIncludeConfig, doctorScheduleSearchableFields } from "./doctorSchedules.constant";
 
-
-
-
-
-const createMyDoctorScheule = async(user: IRequestUser, payload: ICreateDoctorSchedulePayload) =>{
+const createMyDoctorSchedule = async (user : IRequestUser, payload : ICreateDoctorSchedulePayload) => {
     const doctorData = await prisma.doctor.findUniqueOrThrow({
         where:{
-            email: user.email
+            email : user.email
         }
     });
 
-    const doctorScheduleData = payload.scheduleIds.map((scheduleId)=> ({
-        doctorId: doctorData.id,
+    const doctorScheduleData = payload.scheduleIds.map((scheduleId) => ({
+        doctorId : doctorData.id,
         scheduleId
-    }));
+    }) )
 
-    const result = await prisma.doctorSchedules.createMany({
-        data:doctorScheduleData
+    await prisma.doctorSchedules.createMany({
+        data : doctorScheduleData
     });
+
+    const result = await prisma.doctorSchedules.findMany({
+        where : {
+            doctorId : doctorData.id,
+            scheduleId : {
+                in : payload.scheduleIds
+            }
+        },
+        include : {
+            schedule: true
+        }
+    })
+    
 
     return result;
 }
-
-
-
 
 const getMyDoctorSchedules = async (user : IRequestUser, query : IQueryParams) => {
     const doctorData = await prisma.doctor.findUniqueOrThrow({
@@ -67,7 +73,6 @@ const getMyDoctorSchedules = async (user : IRequestUser, query : IQueryParams) =
     return doctorSchedules;
 }
 
-
 const getAllDoctorSchedules = async (query: IQueryParams) => {
     const queryBuilder = new QueryBuilder<DoctorSchedules, Prisma.DoctorSchedulesWhereInput, Prisma.DoctorSchedulesInclude>(prisma.doctorSchedules, query, {
         filterableFields: doctorScheduleFilterableFields,
@@ -84,7 +89,6 @@ const getAllDoctorSchedules = async (query: IQueryParams) => {
 
     return result;
 }
-
 
 const getDoctorScheduleById = async (doctorId: string, scheduleId: string) => {
     const doctorSchedule = await prisma.doctorSchedules.findUnique({
@@ -103,40 +107,43 @@ const getDoctorScheduleById = async (doctorId: string, scheduleId: string) => {
 }
 
 
-const updateMyDoctorSchedule = async( user:IRequestUser, payload: IUpdateDoctorSchedulePayload) =>{
-     const doctorData = await prisma.doctor.findUniqueOrThrow({
-        where:{
-            email: user.email
-        }
-     });
-
-     const deleteIds = payload.scheduleIds.filter((schedule)=> schedule.shouldDelete).map((schedule)=>schedule.id);
-
-     const createIds = payload.scheduleIds.filter((schedule)=> !schedule.shouldDelete).map((schedule)=>schedule.id);
-
-     const result = await prisma.$transaction(async(tx)=>{
-          await   tx.doctorSchedules.deleteMany({
+const updateMyDoctorSchedule = async (user : IRequestUser, payload: IUpdateDoctorSchedulePayload) => {
+        const doctorData = await prisma.doctor.findUniqueOrThrow({
             where:{
-                doctorId: doctorData.id,
-                scheduleId: {
-                    in: deleteIds
-                }
+                email : user.email
             }
-          });
-      const doctorScheduleData = createIds.map((scheduleId)=> ({
-        doctorId: doctorData.id,
-        scheduleId
-      }));
+        });
 
-      const result = await tx.doctorSchedules.createMany({
-        data: doctorScheduleData
-      });
-      return result;
-     })
+        const deleteIds = payload.scheduleIds.filter(schedule => schedule.shouldDelete).map(schedule => schedule.id);
 
-     return result;
+        const createIds = payload.scheduleIds.filter(schedule => !schedule.shouldDelete).map(schedule => schedule.id);
+
+        const result = await prisma.$transaction(async (tx) => {
+
+            await tx.doctorSchedules.deleteMany({
+                where : {
+                    isBooked: false,
+                    doctorId : doctorData.id,
+                    scheduleId : {
+                        in : deleteIds
+                    }
+                }
+            });
+
+            const doctorScheduleData = createIds.map((scheduleId) => ({
+                doctorId : doctorData.id,
+                scheduleId
+            }) )
+
+            const result = await tx.doctorSchedules.createMany({
+                data : doctorScheduleData
+            });
+
+            return result;
+        })
+
+        return result;
 }
-
 
 const deleteMyDoctorSchedule = async (id: string, user: IRequestUser) => {
     const doctorData = await prisma.doctor.findUniqueOrThrow({
@@ -155,11 +162,12 @@ const deleteMyDoctorSchedule = async (id: string, user: IRequestUser) => {
 }
 
 
+
 export const DoctorScheduleService = {
-    createMyDoctorScheule,
-    getMyDoctorSchedules,
+    createMyDoctorSchedule,
     getAllDoctorSchedules,
     getDoctorScheduleById,
     updateMyDoctorSchedule,
-    deleteMyDoctorSchedule
+    deleteMyDoctorSchedule,
+    getMyDoctorSchedules
 }
