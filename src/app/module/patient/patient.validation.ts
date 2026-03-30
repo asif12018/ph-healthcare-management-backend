@@ -1,14 +1,14 @@
 import z from "zod";
 import { BloodGroup, Gender } from "../../../generated/prisma/enums";
 
-export const updatePatienProfileZodSchema = z.object({
+const updatePatienProfileZodSchema = z.object({
   patientInfo: z
     .object({
       name: z
         .string("Name must be a string")
         .min(1, "Name must be at least 1 character long")
         .optional(),
-      profile: z.url("Profile must be a url").optional(),
+      profilePhoto: z.string().optional(),
       contactNumber: z
         .string("Contact number must be a string")
         .min(1, "Contact number must be at least 1 character long")
@@ -86,6 +86,14 @@ export const updatePatienProfileZodSchema = z.object({
         if (report.reportLink && !report.reportName) {
           return false;
         }
+        return true;
       }
+    },{
+        message:"Invalid medical reports"
     }),
 });
+
+
+export const PatientValidation = {
+    updatePatienProfileZodSchema
+}

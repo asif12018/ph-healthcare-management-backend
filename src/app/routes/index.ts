@@ -8,6 +8,7 @@ import { scheduleRoutes } from "../module/schedule/schedule.routes";
 import { DoctorScheduleRoutes } from "../module/doctorSchedule/doctorSchedule.routes";
 import { AppointmentRoutes } from "../module/appointment/appointment.routes";
 import { DoctorRoutes } from "../module/doctor/doctor.route";
+import { PatientRoutes } from "../module/patient/patient.routes";
 
 
 
@@ -21,6 +22,8 @@ router.use("/specialties", SpecialtyRoute);
 router.use("/auth", AuthRoutes);
 
 router.use("/users", UserRoutes);
+
+router.use("/patients", PatientRoutes);
 
 router.use("/doctors", DoctorRoutes);
 
