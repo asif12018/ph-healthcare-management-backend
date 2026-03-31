@@ -74,6 +74,13 @@ app.get("/", async (req: Request, res: Response) => {
 //global error handler
 app.use(globalErrorHandler);
 
+//test server error
+
+// src/app.ts
+
+
+
+
 //not found route
 
 app.use(notFount);
