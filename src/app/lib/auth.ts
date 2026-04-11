@@ -3,10 +3,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { Role, UserStatus } from "../../generated/prisma/enums";
 import { envVars } from "../../config/env";
-import ms, { type StringValue } from "ms";
 import { bearer, emailOTP } from "better-auth/plugins";
 import { sendEmail } from "../utils/email";
-import { env } from "node:process";
+
 // If your Prisma file is located elsewhere, you can change the path
 
 export const auth = betterAuth({
@@ -150,7 +149,7 @@ export const auth = betterAuth({
   redirectURLs:{
     signIn: `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success`
   },
-  trustedOrigins:[process.env.BETTER_AUTH_URL || "http://localhost:5000", envVars.FRONTEND_URL],
+  trustedOrigins:[process.env.BETTER_AUTH_URL || "http://localhost:5000", envVars.FRONTEND_URL, "https://ph-healthcare-backend-two.vercel.app"],
   advanced:{
       // disableCSRFCheck: true
       useSecureCookies: false,

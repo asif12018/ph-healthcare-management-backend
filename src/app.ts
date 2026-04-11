@@ -1,5 +1,5 @@
-import express, { Application, NextFunction, Request, Response } from "express";
-import { prisma } from "./app/lib/prisma";
+import express, { Application,  Request, Response } from "express";
+
 import { IndexRoute } from "./app/routes";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { notFount } from "./app/middleware/notFoundRoute";
@@ -31,7 +31,7 @@ app.post(
 );
 app.use(
   cors({
-    origin: [envVars.FRONTEND_URL, envVars.BETTER_AUTH_URL],
+    origin: [envVars.FRONTEND_URL, envVars.BETTER_AUTH_URL, "https://ph-healthcare-backend-two.vercel.app"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
